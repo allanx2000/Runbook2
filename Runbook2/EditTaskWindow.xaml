@@ -1,0 +1,84 @@
+﻿<Window x:Class="Runbook2.EditTaskWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:dlg="clr-namespace:Innouvous.Utils.DialogWindow.Windows;assembly=Innouvous.Utils.DialogWindow.Windows"
+        xmlns:local="clr-namespace:Runbook2"
+        Title="EditTaskWindow" Height="583.019" Width="502.642">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <dlg:DialogControl Grid.Row="0" Name="OptionsControl"/>
+
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Label FontWeight="Bold" Grid.Row="0" Grid.Column="0">Prerequisites:</Label>
+            <Label Grid.Row="0" Grid.Column="1" Content="{Binding Path=ViewModel.PreReqs}" />
+            <Button Grid.Row="0" Grid.Column="2">Edit</Button>
+
+            <Label FontWeight="Bold" Grid.Row="1" Grid.Column="0">Tags:</Label>
+            <Label Grid.Row="1" Grid.Column="1"  Content="{Binding Path=ViewModel.Tags}" />
+            <Button Grid.Row="1" Grid.Column="2">Edit</Button>
+
+            <Label FontWeight="Bold" Grid.Row="2" Grid.Column="0">Owners:</Label>
+            <Label Grid.Row="2" Grid.Column="1" Content="{Binding Path=ViewModel.Owners}" />
+            <Button Grid.Row="2" Grid.Column="2" Command="{Binding EditOwnersCommand}">Edit</Button>
+
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <!--StartTime-->
+            <Label FontWeight="Bold" Grid.Row="0" Grid.Column="0">Start Time:</Label>
+            <Label Grid.Row="0" Grid.Column="1">
+                <TextBlock/>
+            </Label>
+
+            <!--EndTime-->
+            <Label FontWeight="Bold"  Grid.Row="1" Grid.Column="0">End Time:</Label>
+            <Label Grid.Row="1" Grid.Column="1">
+                <TextBlock/>
+            </Label>
+
+            <Button Grid.Column="2" Grid.RowSpan="2" VerticalAlignment="Stretch" >Recalculate</Button>
+        </Grid>
+
+        <Label FontWeight="Bold" Grid.Row="3">Notes</Label>
+        <TextBox Grid.Row="4" Name="Notes" AcceptsReturn="True" />
+
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Command="{Binding SaveCommand}" Content="{Binding OkText}"/>
+            <Button Command="{Binding CancelCommand}">Cancel</Button>
+        </StackPanel>
+
+    </Grid>
+</Window>

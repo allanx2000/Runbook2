@@ -16,25 +16,42 @@ namespace Runbook2.ViewModels
 
         #region Commands
 
+        public RbTaskViewModel SelectedTask {get; set;}
+
         private CommandHelper addNewTaskCommand;
         public CommandHelper AddNewTaskCommand
         {
             get
             {
                 if (addNewTaskCommand == null)
-                    addNewTaskCommand = new CommandHelper(new Action<object>(AddNewTask));
+                    addNewTaskCommand = new CommandHelper(AddNewTask);
 
                 return addNewTaskCommand;
             }
         }
 
-
-        private void AddNewTask(object obj)
+        public CommandHelper EditTaskCommand
         {
-            RbTask test = new RbTask();
-            test.Name = "test";
+            get
+            {
+                return new CommandHelper(EditTask);
+            }
+        }
 
-            TasksService.Service.AddNewTask(test);
+        private void EditTask()
+        {
+            if (SelectedTask != null)
+            {
+                EditTaskWindow window = new EditTaskWindow(SelectedTask.Data);
+                window.ShowDialog();
+            }
+        }
+
+        private void AddNewTask()
+        {
+           
+            EditTaskWindow window = new EditTaskWindow();
+            window.ShowDialog();
         }
 
 

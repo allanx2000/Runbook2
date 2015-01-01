@@ -23,14 +23,22 @@ namespace Runbook2.ViewModels
             }
             private set
             {
-                data = value;
+                if (data != null)
+                    data.CopyFrom(value);
+                else 
+                    data = value;
 
                 RefreshViewModel();
             }
         }
 
+        public void SetUpdatedData(RbTask data)
+        {
+            Data = data;
+        }
+
         //TODO: need to hide?
-        public int ID
+        public int? ID
         {
             get
             {
@@ -38,20 +46,39 @@ namespace Runbook2.ViewModels
             }
         }
 
-        public string Name
+        public string Description
         {
             get
             {
-                return data.Name;
+                return data.Description;
             }
             set
             {
-                data.Name = value;
-                RaisePropertyChanged("Name");
+                data.Description = value;
+                RaisePropertyChanged("Description");
+            }
+        }
+
+
+        public static string MakeTagsString(IEnumerable<RbTag> tags)
+        {
+            return String.Join(", ", from i in tags orderby i.Name ascending select i);
+        }
+
+        public string Tags
+        {
+            get
+            {
+                return MakeTagsString(data.Tags);
             }
         }
 
         private string preReqs;
+        
+        public static string MakePreReqsString(IEnumerable<RbTask> tasks)
+        {
+            return String.Join(",", from p in tasks orderby p.ID ascending select p.ID);
+        }
 
         public string PreReqs
         {
@@ -59,7 +86,7 @@ namespace Runbook2.ViewModels
             {
                 if (preReqs == null)
                 {
-                    preReqs = string.Join(",", from p in data.PreReqs orderby p.ID ascending select p.ID);
+                    preReqs = MakePreReqsString(data.PreReqs);
                 }
 
                 return preReqs;
@@ -132,15 +159,17 @@ namespace Runbook2.ViewModels
 
         public RbTaskViewModel(RbTask task, TasksService service)
         {
-            this.Data = task;
             this.taskService = service;
-
-            task.PropertyChanged += Data_PropertyChanged;
+            this.Data = task;
+            
         }
+
 
         void Data_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             RaisePropertyChanged(e.PropertyName);
+
+            TasksService.Service.NotifyTaskChanged(this);
         }
 
         public void Recalculate()
@@ -151,5 +180,34 @@ namespace Runbook2.ViewModels
 
             TasksService.Service.NotifyTaskChanged(this);
         }
+
+        public bool HasNotes
+        {
+            get
+            {
+                return !String.IsNullOrEmpty(data.Notes);
+            }
+        }
+
+        public bool HasManualStart
+        {
+            get
+            {
+                return data.GetManualStartTime() != null;
+            }
+        }
+
+        public string Owners {
+            get
+            {
+                return MakeOwnersString(Data.Owners);
+            } 
+        }
+
+        private static string MakeOwnersString(IEnumerable<RbOwner> owners)
+        {
+            return String.Join(", ", from i in owners orderby i.Name ascending select i.Name);
+        }
+
     }
 }

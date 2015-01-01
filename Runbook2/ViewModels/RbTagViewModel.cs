@@ -46,5 +46,15 @@ namespace Runbook2.ViewModels
                 return data.ID;
             }
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is RbTag ? ((RbTag)obj).Name == this.Name : false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode();
+        }
     }
 }

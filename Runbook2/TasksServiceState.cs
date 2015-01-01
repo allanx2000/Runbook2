@@ -32,7 +32,7 @@ namespace Runbook2
         public struct Task
         {
             public string Name { get; set; }
-            public int ID { get; set; }
+            public int? ID { get; set; }
             public int Duration { get; set; }
             public string Owners { get; set; }
             public string Tags { get; set; }
@@ -99,7 +99,7 @@ namespace Runbook2
                 var t = new Task()
                 {
                     ID = task.ID,
-                    Name = task.Name,
+                    Name = task.Description,
                     Duration = task.Duration,
                     Owners = MakeString(task.Owners),
                     PreReqs = MakeString(task.PreReqs),

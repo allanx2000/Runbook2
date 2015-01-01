@@ -15,5 +15,16 @@ namespace Runbook2.Models
             this.ID = ID;
             this.Name = Name;
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is RbOwner ? ((RbOwner)obj).Name == this.Name : false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode();
+        }
+
     }
 }

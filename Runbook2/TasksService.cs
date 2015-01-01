@@ -65,14 +65,14 @@ namespace Runbook2
                 RbTask task = new RbTask();
                 
                 //Basic
-                task.Name = t.Name;
-                task.SetID(t.ID);
+                task.Description = t.Name;
+                task.SetID(t.ID.Value);
                 task.SetDuration(t.Duration);
                 
                 if (t.ManualStartTime != null)
                     task.SetManualStartTime(t.ManualStartTime.Value);
 
-                ts.nextTask = task.ID + 1;
+                ts.nextTask = task.ID.Value + 1;
                 
                 //Tags
                 foreach (int i in Utilities.GetInts(t.Tags))
@@ -87,13 +87,13 @@ namespace Runbook2
                 }
 
                 ts.tasks.Add(new RbTaskViewModel(task, ts));
-                tasksLookup.Add(task.ID, task);
+                tasksLookup.Add(task.ID.Value, task);
             }
 
             //Link PreReqs
             foreach (TasksServiceState.Task t in serviceState.Tasks)
             {
-                var task = tasksLookup[t.ID];
+                var task = tasksLookup[t.ID.Value];
 
                 if (!String.IsNullOrEmpty(t.PreReqs))
                 {
@@ -166,8 +166,7 @@ namespace Runbook2
 
         private CollectionViewSource tasksView, ownersView, tagsView;
 
-        private Dictionary<int, List<RbTask>> preReqLookup;
-
+        
         private TasksService()
         {
             CreateViewSources();
@@ -246,11 +245,12 @@ namespace Runbook2
 
         public void ValidateTask(RbTask task)
         {
-            //Check Tag
             //Check Circular PreReqs
+            if (Utilities.HasCircular(task, task.PreReqs))
+            {
+                throw new Exception("The task causes has dependencies.");
+            }
         }
-
-
         
         /// <summary>
         /// Sorts the input IDs and returns a list of RbTask
@@ -265,10 +265,10 @@ namespace Runbook2
 
             foreach (var t in this.tasks)
             {
-                if (numbers.Contains(t.ID))
+                if (numbers.Contains(t.ID.Value))
                 {
                     tasks.Add(t.Data);
-                    numbers.Remove(t.ID);
+                    numbers.Remove(t.ID.Value);
                 }
             }
 
@@ -313,5 +313,18 @@ namespace Runbook2
 
         #endregion
 
+
+        public void UpdateTask(RbTask task)
+        {
+            var existing = tasks.First(x => x.ID == task.ID);
+
+            if (existing != null)
+            {
+                existing.SetUpdatedData(task);
+                this.NotifyTaskChanged(existing);
+            }
+            else
+                throw new Exception("Error Occurred");
+        }
     }
 }

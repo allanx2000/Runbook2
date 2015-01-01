@@ -10,7 +10,7 @@ namespace Runbook2.Models
 {
     public class RbTask : ObservableClass
     {
-        private string name;
+        private string description;
         private List<RbOwner> owners = new List<RbOwner>();
         private List<RbTag> tags = new List<RbTag>();
         private List<RbTask> preReqs = new List<RbTask>();
@@ -24,15 +24,15 @@ namespace Runbook2.Models
             this.startTime = TasksService.Service.MinDate;
         }
 
-        public string Name
+        public string Description
         {
             get
             {
-                return name;
+                return description;
             }
             set
             {
-                name = value;
+                description = value;
             }
         }
 
@@ -59,8 +59,8 @@ namespace Runbook2.Models
         {
             if (!owners.Contains(owner))
             {
-                RaiseEvent("Owners");
                 owners.Add(owner);
+                RaiseEvent("Owners");
             }
         }
 
@@ -170,27 +170,38 @@ namespace Runbook2.Models
 
         #endregion
 
-        public int ID { get; private set; }
+        public int? ID { get; private set; }
 
         public void Recalculate()
         {
+            DateTime newStartTime;
             //Calculate StartTime
             if (PreReqs.Count > 0)
             {
                 var preReqEndTime = PreReqs.Max(x => x.EndTime);
-                
+
                 if (manualStartTime.HasValue)
                 {
                     if (preReqEndTime < manualStartTime.Value)
                     {
-                        startTime = manualStartTime.Value;
+                        newStartTime = manualStartTime.Value;
                     }
-                    else startTime = preReqEndTime;
+                    else newStartTime = preReqEndTime;
                 }
-                else startTime = preReqEndTime;
+                else newStartTime = preReqEndTime;
 
-                if (StartTime < TasksService.Service.MinDate)
-                    startTime = TasksService.Service.MinDate;
+                if (newStartTime < TasksService.Service.MinDate)
+                    newStartTime = TasksService.Service.MinDate;
+
+            }
+            else if (manualStartTime.HasValue)
+                newStartTime = manualStartTime.Value;
+            else
+                newStartTime = TasksService.Service.MinDate;
+
+            if (newStartTime != startTime)
+            {
+                startTime = newStartTime;
 
                 RaiseEvent("StartTime");
                 RaiseEvent("EndTime");
@@ -241,6 +252,56 @@ namespace Runbook2.Models
         public DateTime? GetManualStartTime()
         {
             return manualStartTime;
+        }
+
+        public string Notes { get; set; }
+
+        public RbTask Clone(bool useDummyId)
+        {
+            RbTask clone = new RbTask();
+            clone.ID = useDummyId? -1 : this.ID;
+            clone.manualStartTime = manualStartTime.HasValue? manualStartTime.Value : (DateTime?)null;
+            clone.notes = this.notes.ToString();
+            clone.owners = new List<RbOwner>(this.owners);
+            clone.preReqs = new List<RbTask>(this.preReqs);
+            clone.startTime = this.startTime;
+            clone.Duration = this.Duration;
+            clone.tags = this.tags;
+
+            return clone;
+        }
+
+        public void SetOwners(List<RbOwner> owners)
+        {
+            this.owners = owners;
+        }
+
+        public void SetTags(List<RbTag> tags)
+        {
+            this.tags = tags;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is RbTask ? ((RbTask)obj).ID == this.ID : false;
+        }
+
+        public override int GetHashCode()
+        {
+            return ID == null? -1 : ID.Value;
+        }
+
+        public void CopyFrom(RbTask newValues)
+        {
+            this.Duration = newValues.Duration;
+            this.description = newValues.description;
+            this.manualStartTime = newValues.manualStartTime;
+            this.notes = newValues.notes;
+            this.owners = newValues.owners;
+            this.preReqs = newValues.preReqs;
+            this.startTime = newValues.startTime;
+            this.tags = newValues.tags;
+            this.Recalculate();
         }
     }
 }

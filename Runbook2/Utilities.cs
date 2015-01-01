@@ -25,6 +25,11 @@ namespace Runbook2
         }
 
 
+        public static bool HasCircular(List<RbTask> tasks)
+        {
+            return HasCircular(null, tasks);
+        }
+
         /// <summary>
         /// Determines if the preRequisites will cause a circular dependency
         /// </summary>
@@ -34,15 +39,16 @@ namespace Runbook2
         public static bool HasCircular(RbTask task, IList<RbTask> preReqs, List<int> previousTasks = null)
         {
             if (previousTasks == null)
-                previousTasks = new List<int>(){task.ID};
-            else if (previousTasks.Contains(task.ID))
+                previousTasks = new List<int>(){task.ID.Value};
+            else if (previousTasks.Contains(task.ID.Value))
                 return true;
 
             if (preReqs.Count == 0)
                 return false;
             else
             {
-                previousTasks.Add(task.ID);
+
+                previousTasks.Add(task == null ? -1 : task.ID.Value);
 
                 foreach (RbTask t in preReqs)
                 {
@@ -61,6 +67,7 @@ namespace Runbook2
             return commaSeparatedInts.Split(CommaDelim, StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => Convert.ToInt32(x));
         }
+
     }
 
 }

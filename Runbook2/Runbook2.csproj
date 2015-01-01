@@ -48,22 +48,34 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.Toolkit">
+      <HintPath>..\..\..\Lib\ExtendedWPF\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DateTimePickerComponent.cs" />
+    <Compile Include="EditTaskWindow.xaml.cs">
+      <DependentUpon>EditTaskWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Models\RbOwner.cs" />
     <Compile Include="Models\RbTag.cs" />
     <Compile Include="Models\RbTask.cs" />
     <Compile Include="TasksService.cs" />
     <Compile Include="TasksServiceState.cs" />
     <Compile Include="Utilities.cs" />
+    <Compile Include="ViewModels\EditTaskWindowViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\RbTaskViewModel.cs" />
     <Compile Include="ViewModels\RbTagViewModel.cs" />
     <Compile Include="ViewModels\RbOwnerViewModel.cs" />
+    <Page Include="EditTaskWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -108,6 +120,10 @@
     <ProjectReference Include="..\..\Innouvous.Utils\Innouvous.Utils.Dialogs\Innouvous.Utils.Dialogs.csproj">
       <Project>{2b0e7f06-edf2-4c54-a3be-bd303186f9cb}</Project>
       <Name>Innouvous.Utils.Dialogs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Innouvous.Utils\Innouvous.Utils.DialogWindow.Windows\Innouvous.Utils.DialogWindow.Windows.csproj">
+      <Project>{16e8c431-25d4-45eb-bf1f-386c99c88ec3}</Project>
+      <Name>Innouvous.Utils.DialogWindow.Windows</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Innouvous.Utils\Innouvous.Utils.MessageBoxFactory\Innouvous.Utils.MessageBoxFactory.csproj">
       <Project>{6bddd1f2-3bc0-431d-923d-ce76681a3851}</Project>
