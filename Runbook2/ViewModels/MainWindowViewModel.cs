@@ -2,6 +2,9 @@
 using Innouvous.Utils.MVVM;
 using Runbook2.Models;
 using System;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -13,11 +16,79 @@ namespace Runbook2.ViewModels
 {
     public class MainWindowViewModel : ViewModel
     {
+        #region Task View
+        private ObservableCollection<RbTaskViewModel> tasks;
+        private CollectionViewSource tasksView;
+
+        public RbTaskViewModel SelectedTask { get; set; }
+
+        public ICollectionView TasksView
+        {
+            get
+            {
+                return tasksView.View;
+            }
+        }
+
+        public MainWindowViewModel()
+        {
+            LoadFromTaskService();
+        }
+
+        private void LoadFromTaskService()
+        {
+            tasks = new ObservableCollection<RbTaskViewModel>();
+            foreach (RbTask t in TasksService.Service.Tasks)
+            {
+                tasks.Add(new RbTaskViewModel(t));
+            }
+
+            tasksView = new CollectionViewSource();
+            tasksView.Source = tasks;
+
+            TasksService.Service.Tasks.CollectionChanged += Tasks_CollectionChanged;
+        }
+
+        private void Tasks_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (RbTask t in e.NewItems)
+                    {
+                        tasks.Add(new RbTaskViewModel(t));
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+
+                    var viewsToRemove = new List<RbTaskViewModel>();
+
+                    foreach (RbTask t in e.NewItems)
+                    {
+                        foreach (var vm in tasks)
+                        {
+                            if (vm.Data == t)
+                            {
+                                viewsToRemove.Add(vm);
+                            }
+                        }
+                    }
+
+                    foreach (var t in viewsToRemove)
+                    {
+                        tasks.Remove(t);
+                    }
+
+                    break;
+            }
+        }
+
+        #endregion
+
 
         #region Commands
 
-        public RbTaskViewModel SelectedTask {get; set;}
-
+        
         private CommandHelper addNewTaskCommand;
         public CommandHelper AddNewTaskCommand
         {
@@ -49,7 +120,7 @@ namespace Runbook2.ViewModels
 
         private void AddNewTask()
         {
-           
+
             EditTaskWindow window = new EditTaskWindow();
             window.ShowDialog();
         }
@@ -77,9 +148,12 @@ namespace Runbook2.ViewModels
             if (!String.IsNullOrEmpty(selectDialog.FileName))
             {
                 TasksService.LoadFromXML(selectDialog.FileName);
-            }
 
-            RaisePropertyChanged("Tasks");
+                //Rebind to new TaskServices
+                LoadFromTaskService();
+
+                RefreshViewModel();
+            }
         }
 
         private CommandHelper saveTaskServiceCommand;
@@ -121,12 +195,8 @@ namespace Runbook2.ViewModels
 
         #endregion
 
-        public ICollectionView Tasks
-        {
-            get
-            {
-                return TasksService.Service.Tasks;
-            }
-        }
+
     }
 }
+
+

@@ -13,39 +13,14 @@ namespace Runbook2.ViewModels
     {
         private RbTask data;
 
-        private TasksService taskService;
-
         //TODO: need to hide
         public RbTask Data {
             get
             {
                 return data;
             }
-            private set
-            {
-                if (data != null)
-                    data.CopyFrom(value);
-                else 
-                    data = value;
-
-                RefreshViewModel();
-            }
         }
-
-        public void SetUpdatedData(RbTask data)
-        {
-            Data = data;
-        }
-
-        //TODO: need to hide?
-        public int? ID
-        {
-            get
-            {
-                return data.ID;
-            }
-        }
-
+                
         public string Description
         {
             get
@@ -55,17 +30,17 @@ namespace Runbook2.ViewModels
             set
             {
                 data.Description = value;
+
                 RaisePropertyChanged("Description");
             }
         }
-
 
         public static string MakeTagsString(IEnumerable<RbTag> tags)
         {
             return String.Join(", ", from i in tags orderby i.Name ascending select i);
         }
 
-        public string Tags
+        public string TagsString
         {
             get
             {
@@ -80,7 +55,7 @@ namespace Runbook2.ViewModels
             return String.Join(",", from p in tasks orderby p.ID ascending select p.ID);
         }
 
-        public string PreReqs
+        public string PreReqsString
         {
             get
             {
@@ -95,17 +70,15 @@ namespace Runbook2.ViewModels
             {
                 var numbers = value.Split(Utilities.CommaDelim, StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt32(x)).ToList();
 
-                List<RbTask> tasks = taskService.GetTasks(numbers);
+                List<RbTask> tasks = TasksService.Service.GetTasks(numbers);
 
                 if (!Utilities.HasCircular(this.Data, tasks))
                 {
                     this.Data.SetPreReqs(tasks);
                     preReqs = String.Join(",", tasks.Select(x => x.ID.ToString()));
                 }
-               
-                RaisePropertyChanged("PreReqs");
-
-                Recalculate();
+                
+                RaisePropertyChanged("PreReqsString");
             }
         }
 
@@ -120,9 +93,8 @@ namespace Runbook2.ViewModels
                 data.SetDuration(value);
 
                 RaisePropertyChanged("Duration");
-                Recalculate();
-
-                taskService.NotifyTaskChanged(this);
+                
+                //Recalculate();
             }
         }
 
@@ -131,7 +103,7 @@ namespace Runbook2.ViewModels
             return dt.ToShortDateString() + " " + dt.ToShortTimeString();
         }
 
-        public string StartTime
+        public string StartTimeString
         {
             get
             {
@@ -149,7 +121,7 @@ namespace Runbook2.ViewModels
             SetManualStartTime(DateTime.Parse(dateTime));
         }
 
-        public string EndTime
+        public string EndTimeString
         {
             get
             {
@@ -157,29 +129,46 @@ namespace Runbook2.ViewModels
             }
         }
 
-        public RbTaskViewModel(RbTask task, TasksService service)
+        public RbTaskViewModel(RbTask task)
         {
-            this.taskService = service;
-            this.Data = task;
-            
+            this.data = task;
+            task.PropertyChanged += Data_PropertyChanged;
         }
 
 
-        void Data_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void Data_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            RaisePropertyChanged(e.PropertyName);
-
-            TasksService.Service.NotifyTaskChanged(this);
+            if (e.PropertyName == RbTask.REFRESH_ALL)
+                this.RefreshViewModel();
+            else
+            {
+                //Reroute for certain Properties
+                switch (e.PropertyName)
+                {
+                    case RbTask.PROP_ENDDATE:
+                        RaisePropertyChanged("EndDateString");
+                        break;
+                    case RbTask.PROP_MANUAL_START_TIME:
+                        RaisePropertyChanged("HasManualStart");
+                        break;
+                    case RbTask.PROP_NOTES:
+                        RaisePropertyChanged("HasNots");
+                        break;
+                    default:
+                        RaisePropertyChanged(e.PropertyName);
+                        break;
+                }
+            }
         }
 
-        public void Recalculate()
+        /*public void Recalculate()
         {
-            Data.Recalculate();
+            //Data.Recalculate();
 
             RefreshViewModel();
 
-            TasksService.Service.NotifyTaskChanged(this);
-        }
+            //TasksService.Service.NotifyTaskChanged(this);
+        }*/
 
         public bool HasNotes
         {

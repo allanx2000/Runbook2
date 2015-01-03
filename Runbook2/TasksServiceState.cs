@@ -37,6 +37,7 @@ namespace Runbook2
             public string Owners { get; set; }
             public string Tags { get; set; }
             public string PreReqs { get; set; }
+            public string Notes { get; set; }
             public DateTime? ManualStartTime { get; set; }
         }
 
@@ -59,17 +60,16 @@ namespace Runbook2
         }
 
 
-        public static TasksServiceState FromTaskService()
+        public static TasksServiceState FromTaskService(IEnumerable<RbTask> tasks, IEnumerable<RbOwner> owners, IEnumerable<RbTag> tags)
+        
         {
             var svc = TasksService.Service;
 
             var state = new TasksServiceState();
             state.MinDate = svc.MinDate;
 
-            foreach (RbOwnerViewModel vm in svc.Owners)
+            foreach (RbOwner owner in owners)
             {
-                var owner = vm.Data;
-
                 var o = new Owner()
                 {
                     Name = owner.Name,
@@ -79,10 +79,8 @@ namespace Runbook2
                 state.Owners.Add(o);
             }
 
-            foreach (RbTagViewModel vm in svc.Tags)
+            foreach (RbTag tag in tags)
             {
-                var tag = vm.Data;
-
                 var t = new Tag()
                 {
                     Name = tag.Name,
@@ -92,10 +90,8 @@ namespace Runbook2
                 state.Tags.Add(t);
             }
 
-            foreach (RbTaskViewModel vm in svc.Tasks)
+            foreach (RbTask task in tasks)
             {
-                var task = vm.Data;
-
                 var t = new Task()
                 {
                     ID = task.ID,
@@ -104,7 +100,8 @@ namespace Runbook2
                     Owners = MakeString(task.Owners),
                     PreReqs = MakeString(task.PreReqs),
                     Tags = MakeString(task.Tags),
-                    ManualStartTime = task.GetManualStartTime()
+                    ManualStartTime = task.GetManualStartTime(),
+                    Notes = task.Notes
                 };
 
                 state.Tasks.Add(t);
@@ -128,6 +125,7 @@ namespace Runbook2
         {
             return String.Join(",", from o in tasks select o.ID);
         }
+
 
     }
 

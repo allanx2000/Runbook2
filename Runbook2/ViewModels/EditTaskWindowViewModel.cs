@@ -12,8 +12,15 @@ namespace Runbook2.ViewModels
 {
     public class EditTaskWindowViewModel : ViewModel
     {
+        private RbTask existingTask;
         private RbTask task;
-        private bool isEdit;
+        private bool IsEdit
+        {
+            get
+            {
+                return existingTask != null;
+            }
+        }
 
         private EditTaskWindow window;
 
@@ -23,28 +30,39 @@ namespace Runbook2.ViewModels
             set;
         }
 
+        public RbTask Data
+        {
+            get
+            {
+                return task;
+            }
+        }
+
         private void Initialize(RbTask task)
         {
-            this.task = task;
-
-            this.ViewModel = new RbTaskViewModel(task, TasksService.Service);
-
+            if (task != null)
+            {
+                this.existingTask = task;
+                this.task = task.Clone(false);
+            }
+            else
+                this.task = new RbTask();
+            
+            this.ViewModel = new RbTaskViewModel(this.task);
         }
 
         public EditTaskWindowViewModel(EditTaskWindow window, RbTask existingTask = null)
         {
             this.window = window;
 
-            isEdit = existingTask != null;
-
-            Initialize(isEdit? existingTask : new RbTask());
+            Initialize(existingTask);
         }
 
 
         public string OkText { 
             get
             {
-                return isEdit? "Edit" : "Add";
+                return IsEdit? "Edit" : "Add";
             }
         }
 
@@ -115,9 +133,9 @@ namespace Runbook2.ViewModels
                     }
                 }
 
-                if (isEdit)
+                if (IsEdit)
                 {
-                    TasksService.Service.UpdateTask(task);
+                    TasksService.Service.UpdateTask(existingTask, task);
                 }
                 else
                     TasksService.Service.AddNewTask(task);

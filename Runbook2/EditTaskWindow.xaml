@@ -60,20 +60,20 @@
             <!--StartTime-->
             <Label FontWeight="Bold" Grid.Row="0" Grid.Column="0">Start Time:</Label>
             <Label Grid.Row="0" Grid.Column="1">
-                <TextBlock/>
+                <TextBlock Text="{Binding Path=ViewModel.StartTimeString}" />
             </Label>
 
             <!--EndTime-->
             <Label FontWeight="Bold"  Grid.Row="1" Grid.Column="0">End Time:</Label>
             <Label Grid.Row="1" Grid.Column="1">
-                <TextBlock/>
+                <TextBlock Text="{Binding Path=ViewModel.EndTimeString}" />
             </Label>
-
+            
             <Button Grid.Column="2" Grid.RowSpan="2" VerticalAlignment="Stretch" >Recalculate</Button>
         </Grid>
 
         <Label FontWeight="Bold" Grid.Row="3">Notes</Label>
-        <TextBox Grid.Row="4" Name="Notes" AcceptsReturn="True" />
+        <TextBox Grid.Row="4" VerticalContentAlignment="Top" Name="Notes" Text="{Binding Path=Data.Notes}" AcceptsReturn="True" />
 
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center">
             <Button Command="{Binding SaveCommand}" Content="{Binding OkText}"/>

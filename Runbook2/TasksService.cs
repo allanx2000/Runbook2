@@ -42,7 +42,7 @@ namespace Runbook2
             {
                 RbOwner owner = new RbOwner(o.ID, o.Name);
 
-                ts.owners.Add(new RbOwnerViewModel(owner));
+                ts.owners.Add(owner);
                 ownerLookup.Add(o.ID, owner);
 
                 ts.nextOwner = o.ID + 1;
@@ -53,7 +53,7 @@ namespace Runbook2
             {
                 RbTag tag = new RbTag(t.ID, t.Name);
 
-                ts.tags.Add(new RbTagViewModel(tag));
+                ts.tags.Add(tag);
                 tagLookup.Add(t.ID, tag);
 
                 ts.nextTag = t.ID + 1;
@@ -68,7 +68,9 @@ namespace Runbook2
                 task.Description = t.Name;
                 task.SetID(t.ID.Value);
                 task.SetDuration(t.Duration);
-                
+
+                task.Notes = t.Notes;
+
                 if (t.ManualStartTime != null)
                     task.SetManualStartTime(t.ManualStartTime.Value);
 
@@ -86,7 +88,7 @@ namespace Runbook2
                     task.Owners.Add(ownerLookup[i]);
                 }
 
-                ts.tasks.Add(new RbTaskViewModel(task, ts));
+                ts.tasks.Add(task);
                 tasksLookup.Add(task.ID.Value, task);
             }
 
@@ -100,8 +102,6 @@ namespace Runbook2
                     task.SetPreReqs(ts.GetTasks(Utilities.GetInts(t.PreReqs).ToList()));
                 }
             }
-
-            ts.CreateViewSources();
 
             _service = ts;
         }
@@ -151,20 +151,59 @@ namespace Runbook2
 
             StreamWriter sw = new StreamWriter(savePath);
 
-            _xser.Serialize(sw, TasksServiceState.FromTaskService());
+            _xser.Serialize(sw, TasksServiceState.FromTaskService(tasks, owners, tags));
 
             sw.Close();
         }
 
-        private ObservableCollection<RbTaskViewModel> tasks = new ObservableCollection<RbTaskViewModel>();
-        private ObservableCollection<RbOwnerViewModel> owners = new ObservableCollection<RbOwnerViewModel>();
-        private ObservableCollection<RbTagViewModel> tags = new ObservableCollection<RbTagViewModel>();
+        private ObservableCollection<RbTask> tasks = new ObservableCollection<RbTask>();
+        private ObservableCollection<RbOwner> owners = new ObservableCollection<RbOwner>();
+        private ObservableCollection<RbTag> tags = new ObservableCollection<RbTag>();
 
         private int nextTask = 1, nextOwner = 1, nextTag = 1;
 
         private DateTime minDate = DateTime.Now;
 
+        #region Views
         private CollectionViewSource tasksView, ownersView, tagsView;
+                
+        public ICollectionView Tags
+        {
+            get
+            {
+                return tagsView.View;
+            }
+        }
+
+        public ICollectionView Owners
+        {
+            get
+            {
+                return ownersView.View;
+            }
+        }
+
+        public ICollectionView Tasks
+        {
+            get
+            {
+                return tasksView.View;
+            }
+        }
+
+        private void CreateViewSources()
+        {
+            tasksView = new CollectionViewSource();
+            tasksView.Source = tasks;
+
+            ownersView = new CollectionViewSource();
+            ownersView.Source = owners;
+
+            tagsView = new CollectionViewSource();
+            tagsView.Source = tags;
+        }
+        #endregion
+
 
         
         private TasksService()
@@ -204,23 +243,34 @@ namespace Runbook2
         }*/
 
 
-        private void CreateViewSources()
-        {
-            tasksView = new CollectionViewSource();
-            tasksView.Source = tasks;
-
-            ownersView = new CollectionViewSource();
-            ownersView.Source = owners;
-
-            tagsView = new CollectionViewSource();
-            tagsView.Source = tags;
-        }
-
+        
         private void RenumberIds()
         {
             throw new NotImplementedException();
         }
 
+        #region CRUD
+
+        #region Tasks
+        public void DeleteTask(RbTask task)
+        {
+            List<RbTask> affectedTasks = new List<RbTask>();
+            foreach (var t in tasks)
+            {
+                if (t.PreReqs.Contains(task))
+                {
+                    t.PreReqs.Remove(task);
+                    affectedTasks.Add(t);
+                }
+            }
+
+            foreach (var t in affectedTasks)
+            {
+                t.Recalculate();
+            }
+
+            tasks.Remove(task);
+        }
 
         public void AddNewTask(RbTask task)
         {
@@ -228,20 +278,51 @@ namespace Runbook2
 
             ValidateTask(task);
 
-            tasks.Add(new RbTaskViewModel(task, this));
+            tasks.Add(task);
+
         }
 
-        public void NotifyTaskChanged(RbTaskViewModel taskViewModel)
+        
+
+        public void UpdateTask(RbTask existingTask, RbTask task)
+        {
+            if (existingTask.ID != task.ID)
+            {
+                throw new Exception("Task IDs does not match!");
+            }
+
+            existingTask.CopyFrom(task);
+            NotifyTaskChanged(task);
+
+            
+            /*
+
+            var existing = tasks.First(x => x.ID == task.ID);
+
+            if (existing != null)
+            {
+                existing.CopyFrom(task);
+                this.NotifyTaskChanged(existing);
+            }
+            else
+                throw new Exception("Error Occurred");*/
+        }
+
+        public void NotifyTaskChanged(RbTask task)
         {
             foreach (var t in tasks)
             {
-                if (t.Data.PreReqs.Contains(taskViewModel.Data))
+                if (t.PreReqs.Contains(task))
                 {
                     t.Recalculate();
                 }
             }
         }
 
+        /*public void NotifyTaskChanged(RbTaskViewModel taskVM)
+        {
+            NotifyTaskChanged(taskVM.Data);
+        }*/
 
         public void ValidateTask(RbTask task)
         {
@@ -251,7 +332,19 @@ namespace Runbook2
                 throw new Exception("The task causes has dependencies.");
             }
         }
+        #endregion
+
+        #region Owners
         
+        #endregion
+
+        #region Tags
+
+        #endregion
+
+
+        #endregion
+
         /// <summary>
         /// Sorts the input IDs and returns a list of RbTask
         /// </summary>
@@ -259,20 +352,21 @@ namespace Runbook2
         /// <returns></returns>
         public List<RbTask> GetTasks(List<int> numbers)
         {
-            List<RbTask> tasks = new List<RbTask>();
-
             numbers.Sort();
 
+            List<RbTask> results = tasks.Where(x => numbers.Contains(x.ID.Value)).ToList();
+
+            /*
             foreach (var t in this.tasks)
             {
                 if (numbers.Contains(t.ID.Value))
                 {
-                    tasks.Add(t.Data);
+                    tasks.Add(t);
                     numbers.Remove(t.ID.Value);
                 }
-            }
+            }*/
 
-            return tasks;
+            return results;
         }
 
         #region Properties
@@ -287,44 +381,10 @@ namespace Runbook2
             }
         }
 
-        public ICollectionView Tags
-        {
-            get
-            {
-                return tagsView.View;
-            }
-        }
-
-        public ICollectionView Owners
-        {
-            get
-            {
-                return ownersView.View;
-            }
-        }
-
-        public ICollectionView Tasks
-        {
-            get
-            {
-                return tasksView.View;
-            }
-        }
-
         #endregion
 
 
-        public void UpdateTask(RbTask task)
-        {
-            var existing = tasks.First(x => x.ID == task.ID);
 
-            if (existing != null)
-            {
-                existing.SetUpdatedData(task);
-                this.NotifyTaskChanged(existing);
-            }
-            else
-                throw new Exception("Error Occurred");
-        }
+
     }
 }

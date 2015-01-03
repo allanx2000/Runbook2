@@ -43,5 +43,13 @@ namespace Runbook2
 
         }
 
+        private void DataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete)
+            {
+                e.Handled = true;
+            }
+        }
+
     }
 }

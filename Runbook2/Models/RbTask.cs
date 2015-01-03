@@ -10,19 +10,120 @@ namespace Runbook2.Models
 {
     public class RbTask : ObservableClass
     {
+        public const string REFRESH_ALL = "ALL";
+        
+        public const string PROP_STARTDATE = "StartDate";
+        public const string PROP_ENDDATE = "EndDate";
+        public const string PROP_DURATION = "Duration";
+        public const string PROP_DESCRIPTION = "Description";
+        public const string PROP_TAGS = "Tags";
+        public const string PROP_OWNERS = "Owners";
+        public const string PROP_PREREQ = "PreReqs";
+        public const string PROP_ID = "ID";
+        public const string PROP_MANUAL_START_TIME = "ManualStartTime";
+        public const string PROP_NOTES = "Notes";
+
+
+
         private string description;
         private List<RbOwner> owners = new List<RbOwner>();
         private List<RbTag> tags = new List<RbTag>();
         private List<RbTask> preReqs = new List<RbTask>();
         private DateTime startTime;
-        private string notes;
 
         private DateTime? manualStartTime;
+
+        public int? ID { get; private set; }
+
+        public int Duration { get; private set; }
 
         public RbTask()
         {
             this.startTime = TasksService.Service.MinDate;
         }
+
+        public RbTask Clone(bool useDummyId)
+        {
+            RbTask clone = new RbTask();
+            clone.ID = useDummyId ? -1 : this.ID;
+            clone.manualStartTime = manualStartTime.HasValue ? manualStartTime.Value : (DateTime?)null;
+            clone.Notes = this.Notes;
+            clone.owners = new List<RbOwner>(this.owners);
+            clone.preReqs = new List<RbTask>(this.preReqs);
+            clone.startTime = this.startTime;
+            clone.Duration = this.Duration;
+            clone.tags = this.tags;
+
+            return clone;
+        }
+
+        public void CopyFrom(RbTask newValues)
+        {
+            this.Duration = newValues.Duration;
+            this.description = newValues.description;
+            this.manualStartTime = newValues.manualStartTime;
+            this.Notes = newValues.Notes;
+            this.owners = newValues.owners;
+            this.preReqs = newValues.preReqs;
+            this.startTime = newValues.startTime;
+            this.tags = newValues.tags;
+            this.Recalculate(false);
+
+            RaiseEvent(REFRESH_ALL);
+        }
+
+        public void Recalculate(bool doRefresh = true)
+        {
+            DateTime newStartTime;
+            
+            //Calculate StartTime
+
+            if (PreReqs.Count > 0)
+            {
+                var preReqEndTime = PreReqs.Max(x => x.EndTime);
+
+                if (manualStartTime.HasValue)
+                {
+                    if (preReqEndTime < manualStartTime.Value)
+                    {
+                        newStartTime = manualStartTime.Value;
+                    }
+                    else newStartTime = preReqEndTime;
+                }
+                else newStartTime = preReqEndTime;
+
+                if (newStartTime < TasksService.Service.MinDate)
+                    newStartTime = TasksService.Service.MinDate;
+
+            }
+            else if (manualStartTime.HasValue)
+                newStartTime = manualStartTime.Value;
+            else
+                newStartTime = TasksService.Service.MinDate;
+
+            if (newStartTime != startTime)
+            {
+                startTime = newStartTime;
+            }
+
+            TasksService.Service.NotifyTaskChanged(this);
+            
+            RaiseEvent(PROP_STARTDATE);
+            RaiseEvent(PROP_ENDDATE);
+            RaiseEvent(PROP_DURATION);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is RbTask ? ((RbTask)obj).ID == this.ID : false;
+        }
+
+        public override int GetHashCode()
+        {
+            return ID == null ? -1 : ID.Value;
+        }
+
+
 
         public string Description
         {
@@ -44,14 +145,13 @@ namespace Runbook2.Models
                 return owners;
             }
         }
-
         private void SetOwners(IEnumerable<RbOwner> owners)
         {
             foreach (var o in owners)
             {
                 this.owners.Add(o);
             }
-            
+
             RaiseEvent("Owners");
         }
 
@@ -93,7 +193,7 @@ namespace Runbook2.Models
         {
             Tags.Clear();
             //Tags.AddRange(tags);
-            
+
             foreach (var t in tags)
             {
                 Tags.Add(t);
@@ -137,8 +237,9 @@ namespace Runbook2.Models
             if (!this.preReqs.Contains(task))
             {
                 this.preReqs.Add(task);
-                RaiseEvent("PreReqs");
             }
+
+            Recalculate();
         }
 
         public void SetPreReqs(IList<RbTask> tasks)
@@ -153,8 +254,6 @@ namespace Runbook2.Models
                     PreReqs.Add(t);
                 }
 
-                RaiseEvent("PreReqs");
-
                 Recalculate();
             }
         }
@@ -163,52 +262,11 @@ namespace Runbook2.Models
         {
             if (PreReqs.Remove(task))
             {
-                RaiseEvent("PreReqs");
                 Recalculate();
             }
         }
 
         #endregion
-
-        public int? ID { get; private set; }
-
-        public void Recalculate()
-        {
-            DateTime newStartTime;
-            //Calculate StartTime
-            if (PreReqs.Count > 0)
-            {
-                var preReqEndTime = PreReqs.Max(x => x.EndTime);
-
-                if (manualStartTime.HasValue)
-                {
-                    if (preReqEndTime < manualStartTime.Value)
-                    {
-                        newStartTime = manualStartTime.Value;
-                    }
-                    else newStartTime = preReqEndTime;
-                }
-                else newStartTime = preReqEndTime;
-
-                if (newStartTime < TasksService.Service.MinDate)
-                    newStartTime = TasksService.Service.MinDate;
-
-            }
-            else if (manualStartTime.HasValue)
-                newStartTime = manualStartTime.Value;
-            else
-                newStartTime = TasksService.Service.MinDate;
-
-            if (newStartTime != startTime)
-            {
-                startTime = newStartTime;
-
-                RaiseEvent("StartTime");
-                RaiseEvent("EndTime");
-            }
-        }
-
-        public int Duration { get; private set; }
 
 
         public void SetID(int id)
@@ -218,26 +276,41 @@ namespace Runbook2.Models
 
         public void SetDuration(int duration)
         {
-            Duration = duration;
-            Recalculate();
+            if (duration > 0)
+            {
+                Duration = duration;
+
+                Recalculate();
+            }
         }
 
-        public DateTime StartTime {
+        public DateTime StartTime
+        {
             get
             {
                 return startTime;
             }
         }
 
+        public DateTime? GetManualStartTime()
+        {
+            return manualStartTime;
+        }
+
         public void SetManualStartTime(DateTime dateTime)
         {
             manualStartTime = dateTime;
+
+            RaiseEvent(PROP_MANUAL_START_TIME);
+
+
             Recalculate();
         }
 
         public void ClearManualStartTime()
         {
             manualStartTime = null;
+
             Recalculate();
         }
 
@@ -249,59 +322,25 @@ namespace Runbook2.Models
             }
         }
 
-        public DateTime? GetManualStartTime()
+        private string notes;
+        public string Notes
         {
-            return manualStartTime;
+            get
+            {
+                return notes;
+            }
+            set
+            {
+                notes = value;
+
+                RaiseEvent(PROP_NOTES);
+            }
         }
 
-        public string Notes { get; set; }
 
-        public RbTask Clone(bool useDummyId)
-        {
-            RbTask clone = new RbTask();
-            clone.ID = useDummyId? -1 : this.ID;
-            clone.manualStartTime = manualStartTime.HasValue? manualStartTime.Value : (DateTime?)null;
-            clone.notes = this.notes.ToString();
-            clone.owners = new List<RbOwner>(this.owners);
-            clone.preReqs = new List<RbTask>(this.preReqs);
-            clone.startTime = this.startTime;
-            clone.Duration = this.Duration;
-            clone.tags = this.tags;
 
-            return clone;
-        }
 
-        public void SetOwners(List<RbOwner> owners)
-        {
-            this.owners = owners;
-        }
 
-        public void SetTags(List<RbTag> tags)
-        {
-            this.tags = tags;
-        }
 
-        public override bool Equals(object obj)
-        {
-            return obj is RbTask ? ((RbTask)obj).ID == this.ID : false;
-        }
-
-        public override int GetHashCode()
-        {
-            return ID == null? -1 : ID.Value;
-        }
-
-        public void CopyFrom(RbTask newValues)
-        {
-            this.Duration = newValues.Duration;
-            this.description = newValues.description;
-            this.manualStartTime = newValues.manualStartTime;
-            this.notes = newValues.notes;
-            this.owners = newValues.owners;
-            this.preReqs = newValues.preReqs;
-            this.startTime = newValues.startTime;
-            this.tags = newValues.tags;
-            this.Recalculate();
-        }
     }
 }

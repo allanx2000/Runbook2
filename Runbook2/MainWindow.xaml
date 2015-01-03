@@ -13,23 +13,25 @@
         
         <Menu Grid.Row="0">
             <MenuItem Header="File" >
-                <MenuItem Header="Open" />
-                <MenuItem Header="Save" />
+                <MenuItem Header="Open" Command="{Binding LoadTaskServiceCommand}"/>
+                <MenuItem Header="Save" Command="{Binding SaveTaskServiceCommand}" />
             </MenuItem>
         </Menu>
-        
-        <DataGrid Grid.Row="2" SelectedItem="{Binding SelectedTask}" AutoGenerateColumns="False" SelectionMode="Single" SelectionUnit="FullRow" ItemsSource="{Binding Tasks}" >
+
+        <DataGrid Grid.Row="2" SelectedItem="{Binding SelectedTask}" ItemsSource="{Binding TasksView}"  
+                  AutoGenerateColumns="False" SelectionMode="Single" SelectionUnit="FullRow" PreviewKeyDown="DataGrid_PreviewKeyDown" 
+        >
             <DataGrid.Columns>
-                <DataGridTextColumn Header="ID" Binding="{Binding ID}" />
+                <DataGridTextColumn Header="ID" Binding="{Binding Path=Data.ID, Mode=OneWay}" />
                 <DataGridTextColumn Header="Description" Binding="{Binding Description}"/>
-                <DataGridTextColumn Header="Prerequisites" Binding="{Binding PreReqs}"/>
+                <DataGridTextColumn Header="Prerequisites" Binding="{Binding PreReqsString}"/>
                 <DataGridCheckBoxColumn Header="Custom Start?" Binding="{Binding HasManualStart, Mode=OneWay}"/>
-                <DataGridTextColumn Header="Start Time" Binding="{Binding StartTime}"/>
+                <DataGridTextColumn Header="Start Time" Binding="{Binding StartTimeString, Mode=OneWay}"/>
                 <DataGridTextColumn Header="Dur." Binding="{Binding Duration}"/>
-                <DataGridTextColumn Header="End Time" Binding="{Binding EndTime}"/>
+                <DataGridTextColumn Header="End Time" Binding="{Binding EndTimeString, Mode=OneWay}"/>
                 <DataGridCheckBoxColumn Header="Notes?" Binding="{Binding HasNotes, Mode=OneWay}"/>
-                <DataGridTextColumn Header="Owners" Binding="{Binding Owners}"/>
-                <DataGridTextColumn Header="Tags" Binding="{Binding Tags}"/>
+                <DataGridTextColumn Header="Owners" Binding="{Binding Owners, Mode=OneWay}"/>
+                <DataGridTextColumn Header="Tags" Binding="{Binding Tags, Mode=OneWay}"/>
 
 
             </DataGrid.Columns>
