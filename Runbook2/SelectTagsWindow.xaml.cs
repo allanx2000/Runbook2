@@ -2,6 +2,7 @@
 using Runbook2.Models;
 using Runbook2.ViewModels;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,7 @@ namespace Runbook2
     /// </summary>
     public partial class SelectTagsWindow : Window
     {
-        private SelectTagsViewModel viewModel;
+        private SelectWindowViewModel<RbTagViewModel> viewModel;
 
         public SelectTagsWindow(List<RbTag> allTags, List<RbTag> existingTags)
         {
@@ -33,9 +34,53 @@ namespace Runbook2
                 allTags.Remove(i);
             }
 
-            viewModel = new SelectTagsViewModel(allTags, existingTags, () => this.Close());
+            var selected = from i in existingTags select new RbTagViewModel(i);
+            var unselected = from i in allTags select new RbTagViewModel(i);
+
+            viewModel = new SelectWindowViewModel<RbTagViewModel>(unselected, selected,
+                OnClose, UpdateTextbox, ConvertToList,
+                CreateNewTag, MakeSelectedString
+                );
 
             this.DataContext = viewModel;
+        }
+
+        private void UpdateTextbox(bool success)
+        {
+            if (success)
+                NewTagNameTextbox.Text = null;
+        }
+
+        private void OnClose()
+        {
+            this.Close();
+        }
+
+        private string MakeSelectedString(List<RbTagViewModel> items)
+        {
+            var names = (from i in items 
+                                  orderby i.Data.Name ascending 
+                                  select i.Data.Name);
+
+            return String.Join(", ", names);
+        }
+        private RbTagViewModel CreateNewTag(object paramz)
+        {
+            string name = NewTagNameTextbox.Text;
+
+            return new RbTagViewModel(new RbTag(null, name));
+        }
+
+        private List<RbTagViewModel> ConvertToList(IEnumerable arg)
+        {
+            List<RbTagViewModel> items = new List<RbTagViewModel>();
+
+            foreach (RbTagViewModel i in arg)
+            {
+                items.Add(i);
+            }
+
+            return items;
         }
 
         public bool IsCancelled
@@ -48,11 +93,12 @@ namespace Runbook2
 
         public IEnumerable<RbTag> GetSelectedTags()
         {
-            return viewModel.SelectedTags;
+            return from i in viewModel.SelectedItems select i.Data;
         }
 
     }
 
+ /*
     public class SelectTagsViewModel : ViewModel
     {
         #region Properties
@@ -229,5 +275,5 @@ namespace Runbook2
             //Refresh SelectedTags
             RaisePropertyChanged("SelectedTags");
         }
-    }
+    }*/
 }

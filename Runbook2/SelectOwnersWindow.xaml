@@ -42,8 +42,8 @@
             </Grid.ColumnDefinitions>
             
             <Label Content="New Owner:" Grid.Column="0"/>
-            <TextBox Grid.Column="1" Text="{Binding NewOwnerName, UpdateSourceTrigger=PropertyChanged}"/>
-            <Button Grid.Column="2" Command="{Binding AddNewOwnerCommand}">Add</Button>
+            <TextBox Name="NewOwnerNameTextbox" Grid.Column="1" />
+            <Button Grid.Column="2" Command="{Binding AddNewItemCommand}" CommandParameter="{Binding ElementName=NewOwnerNameTextbox, Path=Text}">Add</Button>
         </Grid>
         
         <DockPanel LastChildFill="True" Grid.Row="2">

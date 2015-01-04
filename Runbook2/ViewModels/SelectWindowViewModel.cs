@@ -15,12 +15,21 @@ namespace Runbook2.ViewModels
         private Func<object, T> OnCreateNewItem;
         private Func<IEnumerable, List<T>> OnSelectedToList;
         private Func<List<T>, string> OnMakeSelectedString;
+        private Action<bool> OnNewItemAdded;
 
-        public SelectWindowViewModel(Func<IEnumerable, List<T>> onSelectedToList, Func<object, T> onCreateNewItem = null, Func<List<T>, string> onMakeSelectedString = null)
+        public SelectWindowViewModel(IEnumerable<T> unselectedItems, IEnumerable<T> selectedItems, 
+            Action onClose, Action<bool> onNewItemAdded, Func<IEnumerable, List<T>> onSelectedToList,
+            Func<object, T> onCreateNewItem = null, Func<List<T>, string> onMakeSelectedString = null
+            )
         {
+            this.SelectControl = new SelectControl<T>(unselectedItems, selectedItems);
+
             this.OnCreateNewItem = onCreateNewItem;
             this.OnSelectedToList = onSelectedToList;
             this.OnMakeSelectedString = onMakeSelectedString;
+
+            this.OnClose = onClose;
+            this.OnNewItemAdded = onNewItemAdded;
         }
 
         #region Properties
@@ -97,6 +106,8 @@ namespace Runbook2.ViewModels
             {
                 UpdateSelectedString();
             }
+
+            OnNewItemAdded.Invoke(success);
         }
 
         private void UpdateSelectedString()
@@ -113,8 +124,7 @@ namespace Runbook2.ViewModels
                 {
                     isCancelled = false;
 
-                    if (OnClose != null)
-                        OnClose.Invoke();
+                    OnClose.Invoke();
                 });
             }
         }
@@ -127,8 +137,7 @@ namespace Runbook2.ViewModels
                 {
                     isCancelled = true;
 
-                    if (OnClose != null)
-                        OnClose.Invoke();
+                    OnClose.Invoke();
                 });
             }
         }

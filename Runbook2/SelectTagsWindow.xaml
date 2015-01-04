@@ -42,14 +42,14 @@
             </Grid.ColumnDefinitions>
             
             <Label Content="New Tag:" Grid.Column="0"/>
-            <TextBox Grid.Column="1" Text="{Binding NewTagName, UpdateSourceTrigger=PropertyChanged}"/>
-            <Button Grid.Column="2" Command="{Binding AddNewTagCommand}">Add</Button>
+            <TextBox Grid.Column="1" Name="NewTagNameTextbox"/>
+            <Button Grid.Column="2" Command="{Binding AddNewItemCommand}">Add</Button>
         </Grid>
         
         <DockPanel LastChildFill="True" Grid.Row="2">
             <Label DockPanel.Dock="Left" FontWeight="Bold">Selected:</Label>
             <Label>
-                <TextBlock Text="{Binding SelectedTagsString}"/>
+                <TextBlock Text="{Binding SelectedString}"/>
             </Label>
         </DockPanel>
 

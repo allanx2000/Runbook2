@@ -124,9 +124,9 @@ namespace Runbook2
 
         #endregion 
 
-        public SelectControl(IEnumerable<T> allItems, IEnumerable<T> selectedItems)
+        public SelectControl(IEnumerable<T> unselectedItems, IEnumerable<T> selectedItems)
         {
-            SetDeselectedItems(allItems);
+            SetDeselectedItems(unselectedItems);
             SetSelectedItems(selectedItems);
         }
 
