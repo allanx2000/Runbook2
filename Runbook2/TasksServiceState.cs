@@ -73,7 +73,7 @@ namespace Runbook2
                 var o = new Owner()
                 {
                     Name = owner.Name,
-                    ID = owner.ID
+                    ID = owner.ID.Value
                 };
 
                 state.Owners.Add(o);
@@ -84,7 +84,7 @@ namespace Runbook2
                 var t = new Tag()
                 {
                     Name = tag.Name,
-                    ID = tag.ID
+                    ID = tag.ID.Value
                 };
             
                 state.Tags.Add(t);

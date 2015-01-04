@@ -74,6 +74,30 @@ namespace Runbook2.ViewModels
             }
         }
 
+        public ICommand EditTagsCommand
+        {
+            get
+            {
+                return new CommandHelper(EditTags);
+            }
+        }
+
+
+        private void EditTags()
+        {
+            var allTags = TasksService.Service.TagsList;
+            var selectedTags = Data.Tags;
+
+            SelectTagsWindow dlg = new SelectTagsWindow(allTags, selectedTags);
+            dlg.ShowDialog();
+
+            if (!dlg.IsCancelled)
+            {
+                ViewModel.Data.SetTags(dlg.GetSelectedTags());
+            }
+
+            ViewModel.RefreshViewModel();
+        }
 
         public ICommand EditOwnersCommand
         {
@@ -86,7 +110,17 @@ namespace Runbook2.ViewModels
 
         private void EditOwners()
         {
-            ViewModel.Data.AddOwner(new RbOwner(1, "test"));
+            var allOwners = TasksService.Service.OwnersList;
+            var selectedOwners = Data.Owners;
+
+            SelectOwnersWindow dlg = new SelectOwnersWindow(allOwners, selectedOwners);
+            dlg.ShowDialog();
+
+            if (!dlg.IsCancelled)
+            {
+                ViewModel.Data.SetOwners(dlg.GetSelectedOwners());
+            }
+
             ViewModel.RefreshViewModel();
         }
 

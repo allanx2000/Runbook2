@@ -175,6 +175,21 @@ namespace Runbook2
             }
         }
 
+        public List<RbTag> TagsList
+        {
+            get
+            {
+                return new List<RbTag>(tags);
+            }
+        }
+
+        public List<RbOwner> OwnersList
+        {
+            get
+            {
+                return new List<RbOwner>(owners);
+            }
+        }
         public ICollectionView Owners
         {
             get
@@ -384,7 +399,32 @@ namespace Runbook2
         #endregion
 
 
+        /// <summary>
+        /// Adds the Owner to the master list, if not present
+        /// </summary>
+        /// <param name="o"></param>
+        public void AddNewTag(RbTag o)
+        {
+            if (o.ID == null
+                && tags.FirstOrDefault(x => x.Name == o.Name) == null)
+            {
+                o.SetID(nextTag++);
+                tags.Add(o);
+            }
+        }
 
-
+        /// <summary>
+        /// Adds the Owner to the master list, if not present
+        /// </summary>
+        /// <param name="o"></param>
+        public void AddNewOwner(RbOwner o)
+        {
+            if (o.ID == null 
+                && owners.FirstOrDefault(x => x.Name == o.Name) == null)
+            {
+                o.SetID(nextOwner++);
+                owners.Add(o);
+            }
+        }
     }
 }

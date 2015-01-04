@@ -145,10 +145,14 @@ namespace Runbook2.Models
                 return owners;
             }
         }
-        private void SetOwners(IEnumerable<RbOwner> owners)
+        public void SetOwners(IEnumerable<RbOwner> owners)
         {
+            this.owners.Clear();
+
             foreach (var o in owners)
             {
+                TasksService.Service.AddNewOwner(o);
+
                 this.owners.Add(o);
             }
 
@@ -189,10 +193,9 @@ namespace Runbook2.Models
             }
         }
 
-        private void SetTags(IEnumerable<RbTag> tags)
+        public void SetTags(IEnumerable<RbTag> tags)
         {
             Tags.Clear();
-            //Tags.AddRange(tags);
 
             foreach (var t in tags)
             {
@@ -336,6 +339,7 @@ namespace Runbook2.Models
                 RaiseEvent(PROP_NOTES);
             }
         }
+
 
 
 

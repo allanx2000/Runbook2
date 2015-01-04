@@ -20,7 +20,29 @@ namespace Runbook2.ViewModels
         private ObservableCollection<RbTaskViewModel> tasks;
         private CollectionViewSource tasksView;
 
-        public RbTaskViewModel SelectedTask { get; set; }
+        private RbTaskViewModel selectedTask;
+        public RbTaskViewModel SelectedTask
+        {
+            get
+            {
+                return selectedTask;
+            }
+            set
+            {
+                selectedTask = value;
+
+                RaisePropertyChanged("SelectedTask");
+                RaisePropertyChanged("CanEdit");
+            }
+        }
+
+        public bool CanEdit
+        {
+            get
+            {
+                return selectedTask != null;
+            }
+        }
 
         public ICollectionView TasksView
         {
@@ -88,7 +110,7 @@ namespace Runbook2.ViewModels
 
         #region Commands
 
-        
+
         private CommandHelper addNewTaskCommand;
         public CommandHelper AddNewTaskCommand
         {

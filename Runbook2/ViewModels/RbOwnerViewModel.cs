@@ -14,8 +14,23 @@ namespace Runbook2.ViewModels
         public RbOwnerViewModel(RbOwner owner)
         {
             // TODO: Complete member initialization
-            this.owner = owner;
+            this.owner = owner;            
         }
-        public RbOwner Data { get; set; }
+        public RbOwner Data { 
+            get
+            {
+                return owner;
+            }
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is RbOwnerViewModel ? ((RbOwnerViewModel)obj).Data.Name == this.Data.Name : false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Data.Name.GetHashCode();
+        }
     }
 }

@@ -57,6 +57,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="SelectControl.cs" />
     <Compile Include="DateTimePickerComponent.cs" />
     <Compile Include="EditTaskWindow.xaml.cs">
       <DependentUpon>EditTaskWindow.xaml</DependentUpon>
@@ -64,9 +65,16 @@
     <Compile Include="Models\RbOwner.cs" />
     <Compile Include="Models\RbTag.cs" />
     <Compile Include="Models\RbTask.cs" />
+    <Compile Include="SelectTagsWindow.xaml.cs">
+      <DependentUpon>SelectTagsWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SelectOwnersWindow.xaml.cs">
+      <DependentUpon>SelectOwnersWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="TasksService.cs" />
     <Compile Include="TasksServiceState.cs" />
     <Compile Include="Utilities.cs" />
+    <Compile Include="ViewModels\SelectWindowViewModel.cs" />
     <Compile Include="ViewModels\EditTaskWindowViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\RbTaskViewModel.cs" />
@@ -88,6 +96,14 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="SelectTagsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SelectOwnersWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

@@ -37,7 +37,7 @@ namespace Runbook2.ViewModels
 
         public static string MakeTagsString(IEnumerable<RbTag> tags)
         {
-            return String.Join(", ", from i in tags orderby i.Name ascending select i);
+            return String.Join(", ", from i in tags orderby i.Name ascending select i.Name);
         }
 
         public string TagsString
@@ -186,14 +186,14 @@ namespace Runbook2.ViewModels
             }
         }
 
-        public string Owners {
+        public string OwnersString {
             get
             {
                 return MakeOwnersString(Data.Owners);
             } 
         }
 
-        private static string MakeOwnersString(IEnumerable<RbOwner> owners)
+        public static string MakeOwnersString(IEnumerable<RbOwner> owners)
         {
             return String.Join(", ", from i in owners orderby i.Name ascending select i.Name);
         }

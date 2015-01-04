@@ -39,7 +39,7 @@ namespace Runbook2.ViewModels
             }
         }
 
-        public int ID
+        public int? ID
         {
             get
             {
@@ -49,7 +49,7 @@ namespace Runbook2.ViewModels
 
         public override bool Equals(object obj)
         {
-            return obj is RbTag ? ((RbTag)obj).Name == this.Name : false;
+            return obj is RbTagViewModel ? ((RbTagViewModel)obj).Data.Name == this.Data.Name : false;
         }
 
         public override int GetHashCode()

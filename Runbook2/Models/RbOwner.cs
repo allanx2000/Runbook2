@@ -8,9 +8,9 @@ namespace Runbook2.Models
     public class RbOwner
     {
         public string Name { get; set; }
-        public int ID { get; private set; }
+        public int? ID { get; private set; }
 
-        public RbOwner(int ID, string Name)
+        public RbOwner(int? ID, string Name)
         {
             this.ID = ID;
             this.Name = Name;
@@ -26,5 +26,10 @@ namespace Runbook2.Models
             return Name.GetHashCode();
         }
 
+
+        internal void SetID(int id)
+        {
+            this.ID = id;
+        }
     }
 }
