@@ -13,11 +13,18 @@ namespace Runbook2.ViewModels
     {
         private RbTask data;
 
-        //TODO: need to hide
         public RbTask Data {
             get
             {
                 return data;
+            }
+        }
+
+        public int? ID
+        {
+            get
+            {
+                return Data.ID;
             }
         }
                 
@@ -58,12 +65,9 @@ namespace Runbook2.ViewModels
         public string PreReqsString
         {
             get
-            {
-                if (preReqs == null)
-                {
-                    preReqs = MakePreReqsString(data.PreReqs);
-                }
-
+            {   
+                preReqs = MakePreReqsString(data.PreReqs);
+             
                 return preReqs;
             }
             set
@@ -145,14 +149,20 @@ namespace Runbook2.ViewModels
                 //Reroute for certain Properties
                 switch (e.PropertyName)
                 {
+                    case RbTask.PROP_STARTDATE:
+                        RaisePropertyChanged("StartTimeString");
+                        break;
                     case RbTask.PROP_ENDDATE:
-                        RaisePropertyChanged("EndDateString");
+                        RaisePropertyChanged("EndTimeString");
                         break;
                     case RbTask.PROP_MANUAL_START_TIME:
                         RaisePropertyChanged("HasManualStart");
                         break;
                     case RbTask.PROP_NOTES:
-                        RaisePropertyChanged("HasNots");
+                        RaisePropertyChanged("HasNotes");
+                        break;
+                    case RbTask.PROP_PREREQ:
+                        RaisePropertyChanged("PreReqsString");
                         break;
                     default:
                         RaisePropertyChanged(e.PropertyName);

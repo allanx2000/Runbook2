@@ -206,6 +206,14 @@ namespace Runbook2
             }
         }
 
+        public List<RbTask> TasksList
+        {
+            get
+            {
+                return new List<RbTask>(tasks);
+            }
+        }
+
         private void CreateViewSources()
         {
             tasksView = new CollectionViewSource();
@@ -281,7 +289,7 @@ namespace Runbook2
 
             foreach (var t in affectedTasks)
             {
-                t.Recalculate();
+                t.RecalculateTimes();
             }
 
             tasks.Remove(task);
@@ -307,7 +315,7 @@ namespace Runbook2
             }
 
             existingTask.CopyFrom(task);
-            NotifyTaskChanged(task);
+            NotifyTaskChanged(existingTask);
 
             
             /*
@@ -329,7 +337,7 @@ namespace Runbook2
             {
                 if (t.PreReqs.Contains(task))
                 {
-                    t.Recalculate();
+                    t.RecalculateTimes();
                 }
             }
         }
@@ -424,6 +432,16 @@ namespace Runbook2
             {
                 o.SetID(nextOwner++);
                 owners.Add(o);
+            }
+        }
+
+        public void SetMinDate(DateTime dt)
+        {
+            this.minDate = dt;
+
+            foreach (var t in tasks)
+            {
+                t.RecalculateTimes();
             }
         }
     }

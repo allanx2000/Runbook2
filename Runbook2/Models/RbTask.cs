@@ -8,10 +8,19 @@ using System.Threading.Tasks;
 
 namespace Runbook2.Models
 {
+
+    /// <summary>
+    /// Model for the task object
+    /// 
+    /// NOTE: I don't really like how the class is observable; maybe should just have one Event that can notify the task changed.
+    /// Need to sort out the separation between model, view model, and TasksService.
+    /// </summary>
     public class RbTask : ObservableClass
     {
+        //PropertyName passed for refreshing all ViewModel fields; not good...
         public const string REFRESH_ALL = "ALL";
         
+        //Property Names
         public const string PROP_STARTDATE = "StartDate";
         public const string PROP_ENDDATE = "EndDate";
         public const string PROP_DURATION = "Duration";
@@ -22,7 +31,6 @@ namespace Runbook2.Models
         public const string PROP_ID = "ID";
         public const string PROP_MANUAL_START_TIME = "ManualStartTime";
         public const string PROP_NOTES = "Notes";
-
 
 
         private string description;
@@ -42,10 +50,15 @@ namespace Runbook2.Models
             this.startTime = TasksService.Service.MinDate;
         }
 
-        public RbTask Clone(bool useDummyId)
+        /// <summary>
+        /// Creates a new RbTask with the exact same values
+        /// </summary>
+        /// <param name="nullId">Set the cloned Id to null</param>
+        /// <returns></returns>
+        public RbTask Clone()
         {
             RbTask clone = new RbTask();
-            clone.ID = useDummyId ? -1 : this.ID;
+            clone.ID = this.ID;
             clone.manualStartTime = manualStartTime.HasValue ? manualStartTime.Value : (DateTime?)null;
             clone.Notes = this.Notes;
             clone.owners = new List<RbOwner>(this.owners);
@@ -57,6 +70,14 @@ namespace Runbook2.Models
             return clone;
         }
 
+        /// <summary>
+        /// Copies the values from an different task
+        /// 
+        /// Only use is for updating the existing task with the new values from EditTaskWindow
+        /// 
+        /// NOTE: Need to sort out the flows
+        /// </summary>
+        /// <param name="newValues"></param>
         public void CopyFrom(RbTask newValues)
         {
             this.Duration = newValues.Duration;
@@ -67,17 +88,18 @@ namespace Runbook2.Models
             this.preReqs = newValues.preReqs;
             this.startTime = newValues.startTime;
             this.tags = newValues.tags;
-            this.Recalculate(false);
+            this.RecalculateTimes();
 
             RaiseEvent(REFRESH_ALL);
         }
 
-        public void Recalculate(bool doRefresh = true)
+        /// <summary>
+        /// Recalculates the Task's times
+        /// </summary>
+        public void RecalculateTimes()
         {
             DateTime newStartTime;
             
-            //Calculate StartTime
-
             if (PreReqs.Count > 0)
             {
                 var preReqEndTime = PreReqs.Max(x => x.EndTime);
@@ -113,6 +135,7 @@ namespace Runbook2.Models
             RaiseEvent(PROP_DURATION);
         }
 
+
         public override bool Equals(object obj)
         {
             return obj is RbTask ? ((RbTask)obj).ID == this.ID : false;
@@ -145,6 +168,11 @@ namespace Runbook2.Models
                 return owners;
             }
         }
+
+        /// <summary>
+        /// Sets the task's owner(s)
+        /// </summary>
+        /// <param name="owners"></param>
         public void SetOwners(IEnumerable<RbOwner> owners)
         {
             this.owners.Clear();
@@ -159,6 +187,10 @@ namespace Runbook2.Models
             RaiseEvent("Owners");
         }
 
+        /// <summary>
+        /// Adds a single owner to the task
+        /// </summary>
+        /// <param name="owner"></param>
         public void AddOwner(RbOwner owner)
         {
             if (!owners.Contains(owner))
@@ -168,6 +200,10 @@ namespace Runbook2.Models
             }
         }
 
+        /// <summary>
+        /// Removes the specified owner from the task
+        /// </summary>
+        /// <param name="owner"></param>
         public void RemoveOwner(RbOwner owner)
         {
             if (owners.Remove(owner))
@@ -176,6 +212,9 @@ namespace Runbook2.Models
             }
         }
 
+        /// <summary>
+        /// Removes all owners
+        /// </summary>
         public void ClearOwners()
         {
             owners.Clear();
@@ -235,21 +274,34 @@ namespace Runbook2.Models
             }
         }
 
+        /// <summary>
+        /// Adds a single prerequisite
+        /// </summary>
+        /// <param name="task"></param>
         public void AddPreReq(RbTask task)
         {
             if (!this.preReqs.Contains(task))
             {
-                this.preReqs.Add(task);
+                var newPreReqs = new List<RbTask>(preReqs);
+                newPreReqs.Add(task);
+
+                if (!Utilities.HasCircular(this, newPreReqs))
+                {
+                    this.preReqs.Add(task);
+
+                    RecalculateTimes();
+
+                }
             }
 
-            Recalculate();
+            //Need to call this even if fails so that it at least updates the PreReqString value back to the original value
+            NotifyPreReqsChanged();
         }
 
         public void SetPreReqs(IList<RbTask> tasks)
         {
             if (!Utilities.HasCircular(this, tasks))
             {
-
                 PreReqs.Clear();
 
                 foreach (var t in tasks)
@@ -257,16 +309,26 @@ namespace Runbook2.Models
                     PreReqs.Add(t);
                 }
 
-                Recalculate();
+                RecalculateTimes();
             }
+
+
+            NotifyPreReqsChanged();
         }
 
         public void RemovePreReq(RbTask task)
         {
             if (PreReqs.Remove(task))
             {
-                Recalculate();
+                RecalculateTimes();
             }
+
+            NotifyPreReqsChanged();
+        }
+
+        public void NotifyPreReqsChanged()
+        {
+            RaiseEvent(PROP_PREREQ);
         }
 
         #endregion
@@ -283,7 +345,7 @@ namespace Runbook2.Models
             {
                 Duration = duration;
 
-                Recalculate();
+                RecalculateTimes();
             }
         }
 
@@ -307,14 +369,14 @@ namespace Runbook2.Models
             RaiseEvent(PROP_MANUAL_START_TIME);
 
 
-            Recalculate();
+            RecalculateTimes();
         }
 
         public void ClearManualStartTime()
         {
             manualStartTime = null;
 
-            Recalculate();
+            RecalculateTimes();
         }
 
         public DateTime EndTime

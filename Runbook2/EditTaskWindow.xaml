@@ -32,8 +32,8 @@
             </Grid.RowDefinitions>
 
             <Label FontWeight="Bold" Grid.Row="0" Grid.Column="0">Prerequisites:</Label>
-            <Label Grid.Row="0" Grid.Column="1" Content="{Binding Path=ViewModel.PreReqs}" />
-            <Button Grid.Row="0" Grid.Column="2">Edit</Button>
+            <Label Grid.Row="0" Grid.Column="1" Content="{Binding Path=ViewModel.PreReqsString}" />
+            <Button Grid.Row="0" Grid.Column="2" Command="{Binding EditPreReqsCommand}">Edit</Button>
 
             <Label FontWeight="Bold" Grid.Row="1" Grid.Column="0">Tags:</Label>
             <Label Grid.Row="1" Grid.Column="1"  Content="{Binding Path=ViewModel.TagsString}" />

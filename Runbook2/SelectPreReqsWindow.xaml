@@ -1,0 +1,59 @@
+﻿<Window x:Class="Runbook2.SelectPreReqsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SelectOwnersWindow" Height="300" Width="300">
+    <Window.Resources>
+        <DataTemplate x:Key="TaskList">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Column="0" Content="{Binding Path=Data.ID}"/>
+                <Label Grid.Column="1">
+                    <TextBlock Text="{Binding Description}"/>
+                </Label>
+            </Grid>
+        </DataTemplate>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ListBox Grid.Column="0" Name="DeselectedItemsListBox" SelectionMode="Extended" ItemsSource="{Binding Path=SelectControl.DeselectedItems}"
+                     ItemTemplate="{StaticResource TaskList}" />
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <Button Command="{Binding AddSelectedCommand}" CommandParameter="{Binding ElementName=DeselectedItemsListBox, Path=SelectedItems}">&gt;&gt;</Button>
+                <Button Command="{Binding RemoveSelectedCommand}" CommandParameter="{Binding ElementName=SelectedItemsListBox, Path=SelectedItems}">&lt;&lt;</Button>
+            </StackPanel>
+
+            <ListBox Grid.Column="2" Name="SelectedItemsListBox" ItemsSource="{Binding Path=SelectControl.SelectedItems}" SelectionMode="Extended"
+                ItemTemplate="{StaticResource TaskList}" />
+        </Grid>
+
+        <DockPanel LastChildFill="True" Grid.Row="2">
+            <Label DockPanel.Dock="Left" FontWeight="Bold">Selected:</Label>
+            <Label>
+                <TextBlock Text="{Binding SelectedString}"/>
+            </Label>
+        </DockPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="3">
+            <Button Command="{Binding OKCommand}">OK</Button>
+            <Button Command="{Binding CancelCommand}">Cancel</Button>
+        </StackPanel>
+    </Grid>
+</Window>

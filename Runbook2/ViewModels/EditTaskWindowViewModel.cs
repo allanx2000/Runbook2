@@ -43,7 +43,7 @@ namespace Runbook2.ViewModels
             if (task != null)
             {
                 this.existingTask = task;
-                this.task = task.Clone(false);
+                this.task = task.Clone();
             }
             else
                 this.task = new RbTask();
@@ -119,6 +119,31 @@ namespace Runbook2.ViewModels
             if (!dlg.IsCancelled)
             {
                 ViewModel.Data.SetOwners(dlg.GetSelectedOwners());
+            }
+
+            ViewModel.RefreshViewModel();
+        }
+
+        public ICommand EditPreReqsCommand
+        {
+            get
+            {
+                return new CommandHelper(EditPreReqs);
+            }
+        }
+
+
+        private void EditPreReqs()
+        {
+            var allTasks = TasksService.Service.TasksList;
+            var selectedTasks = Data.PreReqs;
+
+            SelectPreReqsWindow dlg = new SelectPreReqsWindow(allTasks, selectedTasks, existingTask);
+            dlg.ShowDialog();
+
+            if (!dlg.IsCancelled)
+            {
+                ViewModel.Data.SetPreReqs(dlg.GetSelectedTasks().ToList());
             }
 
             ViewModel.RefreshViewModel();

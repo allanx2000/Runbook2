@@ -11,25 +11,17 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 
-namespace Runbook2
+namespace Runbook2.ViewModels
 {
-    /*public class SelectControl<T> : UserControl
-    {
-        
-        public SelectControlViewModel<T> ViewModel
-        {
-            get;
-            private set;
-        }
-
-        public SelectControl(IEnumerable<T> deselectedItems, IEnumerable<T> selectedItems)
-        {
-            ViewModel = new SelectControlViewModel<T>(deselectedItems, selectedItems);
-
-            this.DataContext = ViewModel;
-        }
-    }*/
-
+    
+    /// <summary>
+    /// This class encapsulates the logic and basic ViewModel functionality of the ListBox-based Selection Control
+    /// 
+    /// TODO: To be honest, it's not really that useful by itself, probably should just be part of SelectWindowViewModel directly
+    /// 
+    /// Maybe should just be a model instead
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class SelectControl<T> : ObservableClass
     {
         private ObservableCollection<T> deselectedItems;
@@ -124,10 +116,42 @@ namespace Runbook2
 
         #endregion 
 
+        
         public SelectControl(IEnumerable<T> unselectedItems, IEnumerable<T> selectedItems)
         {
             SetDeselectedItems(unselectedItems);
             SetSelectedItems(selectedItems);
+        }
+
+
+        public void ClearSortDescriptions()
+        {
+            if (selectedItemsViewSource != null && deselectedItems != null)
+            {
+                deselectedItemsViewSource.SortDescriptions.Clear();
+                selectedItemsViewSource.SortDescriptions.Clear();
+            }
+        }
+        public void AddSortDescription(SortDescription description)
+        {
+            if (selectedItemsViewSource != null && deselectedItems != null)
+            {
+                deselectedItemsViewSource.SortDescriptions.Add(description);
+                selectedItemsViewSource.SortDescriptions.Add(description);
+         
+            }
+        }
+        public void SetSortDescription(IEnumerable<SortDescription> descriptions)
+        {
+            if (selectedItemsViewSource != null && deselectedItems != null)
+            {
+                ClearSortDescriptions();
+
+                foreach (var d in descriptions)
+                {
+                    AddSortDescription(d);
+                }
+            }
         }
 
         private void SetSelectedItems(IEnumerable<T> selectedItems)

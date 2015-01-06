@@ -38,8 +38,13 @@ namespace Runbook2
         /// <returns></returns>
         public static bool HasCircular(RbTask task, IList<RbTask> preReqs, List<int> previousTasks = null)
         {
+            if (task.ID == null)
+                return false;
+
             if (previousTasks == null)
-                previousTasks = new List<int>(){task.ID.Value};
+            {
+                previousTasks = new List<int>();
+            }
             else if (previousTasks.Contains(task.ID.Value))
                 return true;
 

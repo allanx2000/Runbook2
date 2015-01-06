@@ -10,19 +10,24 @@ namespace Runbook2.ViewModels
 {
     public class SelectWindowViewModel<T> : ViewModel
     {
-        private Action OnClose;
+        protected Action OnClose;
 
-        private Func<object, T> OnCreateNewItem;
-        private Func<IEnumerable, List<T>> OnSelectedToList;
-        private Func<List<T>, string> OnMakeSelectedString;
-        private Action<bool> OnNewItemAdded;
+        protected Func<object, T> OnCreateNewItem;
+        protected Func<IEnumerable, List<T>> OnSelectedToList;
+        protected Func<List<T>, string> OnMakeSelectedString;
+        protected Action<bool> OnNewItemAdded;
+
+        protected SelectWindowViewModel(IEnumerable<T> unselectedItems, IEnumerable<T> selectedItems)
+        {
+            this.SelectControl = new SelectControl<T>(unselectedItems, selectedItems);
+        }
+
 
         public SelectWindowViewModel(IEnumerable<T> unselectedItems, IEnumerable<T> selectedItems, 
             Action onClose, Action<bool> onNewItemAdded, Func<IEnumerable, List<T>> onSelectedToList,
             Func<object, T> onCreateNewItem = null, Func<List<T>, string> onMakeSelectedString = null
-            )
+            ): this(unselectedItems,selectedItems)
         {
-            this.SelectControl = new SelectControl<T>(unselectedItems, selectedItems);
 
             this.OnCreateNewItem = onCreateNewItem;
             this.OnSelectedToList = onSelectedToList;

@@ -190,6 +190,20 @@ namespace Runbook2.ViewModels
             }
         }
 
+        public ICommand TaskServiceSettingsCommand
+        {
+            get
+            {
+                return new CommandHelper(OpenOptionsDialog);
+            }
+        }
+
+        private void OpenOptionsDialog()
+        {
+            var window = new OptionsWindow();
+            window.ShowDialog();
+        }
+
         private void SaveTaskService(object sender)
         {
             try
